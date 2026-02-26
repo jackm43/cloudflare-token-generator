@@ -5,7 +5,7 @@ Generate scoped Cloudflare API tokens from a bootstrap token. Works as both a Go
 ## Setup
 
 ```bash
-go install github.com/jackmunro/cloudflare-token-generator/cmd/cloudflaretokengenerator@latest
+go install github.com/jackm43/cloudflare-token-generator/cmd/cloudflaretokengenerator@latest
 ```
 
 ### Initialize config
@@ -38,7 +38,7 @@ cloudflaretokengenerator list-zones
 ## SDK Usage
 
 ```go
-import cftoken "github.com/jackmunro/cloudflare-token-generator"
+import cftoken "github.com/jackm43/cloudflare-token-generator"
 
 // Load from ~/.goGenerateCFToken/config.yaml
 cfg, _ := cftoken.LoadConfig()
