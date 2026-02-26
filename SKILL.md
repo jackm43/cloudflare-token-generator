@@ -63,7 +63,7 @@ cloudflaretokengenerator generate dns 023e105f4ecef8ad9ca31a8372d0c353
 cloudflaretokengenerator godmode
 ```
 
-Generates a single token with **edit** (read+write) access to **every** available service, scoped to `all` resources. No additional arguments needed.
+Generates a single token with **edit** (read+write) access to **every** available service, scoped to `all` resources. No additional arguments needed. Dynamically fetches all permission groups from the Cloudflare API, so it automatically includes new services (Zero Trust, Access, Vectorize, Hyperdrive, etc.) without needing code updates. API token management permissions are excluded (sub-tokens cannot manage other tokens).
 
 ### 4. List Available Services
 
