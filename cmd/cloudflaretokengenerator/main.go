@@ -32,6 +32,11 @@ func main() {
 		}
 	case "list-services":
 		runListServices()
+	case "godmode":
+		if err := runGodMode(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
 	case "list-zones":
 		if err := runListZones(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -50,22 +55,32 @@ func printUsage() {
 	fmt.Println(`Usage: cloudflaretokengenerator <command> [args]
 
 Commands:
-  init                          Configure API token, account, and zone
-  generate <service> <scope>    Generate a scoped API token
-  list-services                 List available services
-  list-zones                    List zones accessible by your token
-  help                          Show this help
+  init                                          Configure API token, account, and zone
+  generate <services> <scope> [level]           Generate a scoped API token
+  godmode                                       Generate a token with edit access to all services
+  list-services                                 List available services
+  list-zones                                    List zones accessible by your token
+  help                                          Show this help
+
+Services:
+  Comma-separated list of services (e.g. workers,kv,d1)
 
 Scope:
   all                           All resources (all zones or configured account)
   <zone-id>                     Specific zone ID (zone-scoped services)
   <account-id>                  Specific account ID (account-scoped services)
 
+Level:
+  edit                          Read and write permissions (default)
+  read                          Read-only permissions
+
 Examples:
   cloudflaretokengenerator init
   cloudflaretokengenerator generate dns all
-  cloudflaretokengenerator generate workers all
-  cloudflaretokengenerator generate dns 023e105f4ecef8ad9ca31a8372d0c353`)
+  cloudflaretokengenerator generate workers,kv all edit
+  cloudflaretokengenerator generate workers,kv,d1 all read
+  cloudflaretokengenerator generate dns 023e105f4ecef8ad9ca31a8372d0c353
+  cloudflaretokengenerator godmode`)
 }
 
 func readLine(r *bufio.Reader) string {
@@ -152,10 +167,14 @@ func runInit() error {
 
 func runGenerate() error {
 	if len(os.Args) < 4 {
-		return fmt.Errorf("usage: cloudflaretokengenerator generate <service> <scope>")
+		return fmt.Errorf("usage: cloudflaretokengenerator generate <services> <scope> [level]")
 	}
-	service := os.Args[2]
+	services := strings.Split(os.Args[2], ",")
 	scope := os.Args[3]
+	level := "edit"
+	if len(os.Args) >= 5 {
+		level = os.Args[4]
+	}
 
 	cfg, err := cftoken.LoadConfig()
 	if err != nil {
@@ -167,7 +186,27 @@ func runGenerate() error {
 		return err
 	}
 
-	token, err := gen.Generate(service, scope)
+	token, err := gen.GenerateMulti(services, scope, level)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(token)
+	return nil
+}
+
+func runGodMode() error {
+	cfg, err := cftoken.LoadConfig()
+	if err != nil {
+		return err
+	}
+
+	gen, err := cftoken.New(*cfg)
+	if err != nil {
+		return err
+	}
+
+	token, err := gen.GodMode()
 	if err != nil {
 		return err
 	}
@@ -177,11 +216,13 @@ func runGenerate() error {
 }
 
 func runListServices() {
-	fmt.Println("Available services:\n")
-	fmt.Printf("  %-16s %-10s %s\n", "SERVICE", "SCOPE", "DESCRIPTION")
-	fmt.Printf("  %-16s %-10s %s\n", "-------", "-----", "-----------")
+	fmt.Println("Available services:")
+	fmt.Println()
+	fmt.Printf("  %-16s %-10s %-12s %s\n", "SERVICE", "SCOPE", "LEVELS", "DESCRIPTION")
+	fmt.Printf("  %-16s %-10s %-12s %s\n", "-------", "-----", "------", "-----------")
 	for _, svc := range cftoken.ListServices() {
-		fmt.Printf("  %-16s %-10s %s\n", svc.Name, svc.ResourceScope, svc.Description)
+		levels := strings.Join(cftoken.ServiceLevels(svc), ",")
+		fmt.Printf("  %-16s %-10s %-12s %s\n", svc.Name, svc.ResourceScope, levels, svc.Description)
 	}
 }
 
