@@ -1,6 +1,6 @@
 ---
 name: generating-cftoken
-description: "Generates scoped Cloudflare API tokens using the cloudflaretokengenerator CLI. Use when asked to create, generate, or manage Cloudflare API tokens, set up cftoken config, or list available Cloudflare services/zones."
+description: Generates scoped Cloudflare API tokens using the cloudflaretokengenerator CLI. Use when asked to create, generate, or manage Cloudflare API tokens, set up cftoken config, or list available Cloudflare services/zones.
 ---
 
 # Generating Cloudflare Tokens with the CLI
@@ -28,7 +28,7 @@ This prompts for:
 - **Account ID** — selected from discovered accounts or entered manually
 - **Zone ID** (optional) — default zone for zone-scoped services
 
-> **Note:** `init` is interactive (reads from stdin). Do not run it via Bash tool. Instruct the user to run it manually.
+`init` is interactive (reads from stdin). Do not run it via Bash tool. Instruct the user to run it manually.
 
 ### 2. Generate a Scoped Token
 
